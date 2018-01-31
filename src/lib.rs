@@ -1,0 +1,102 @@
+#[macro_use]
+extern crate log;
+extern crate simple_logger;
+
+
+extern crate config;
+
+// use std::path::Path;
+// use std::collections::HashMap;
+// use std::env;
+use config::*;
+
+
+
+use std::io;
+use std::process::{Command, ExitStatus, exit};
+use std::ffi::OsStr;
+
+
+pub fn get_config(key: &str) -> String {
+    info!("read the config file");
+    let mut settings = Config::default();
+    settings
+        // .merge(File::with_name("~/.uopen_config.json")).unwrap()
+        .merge(File::with_name("./sample_config.json")).unwrap();
+
+    settings.get_str(key).unwrap()
+}
+
+
+pub fn open(opt: &str)  {
+    info!("the opt:{:?}", opt);
+
+    if opt.starts_with("http") | opt.starts_with("HTTP")  {
+        that(opt);
+    }
+    if opt.starts_with(".") | opt.starts_with("/") {
+        filemanager(opt);
+    }
+}
+
+
+#[cfg(not(any(target_os = "windows", target_os = "macos")))]
+pub fn filemanager<T:AsRef<OsStr>+Sized>(path: T) -> io::Result<ExitStatus> {
+    let mut last_err: io::Result<ExitStatus> = Err(io::Error::from_raw_os_error(0));
+
+    match Command::new(get_config("default-file-manager")).arg(path.as_ref()).spawn() {
+        Ok(mut child) => {
+            exit(1);
+            return child.wait()
+        },
+        Err(err) => {
+            last_err = Err(err);
+        },
+    }
+    last_err
+}
+
+
+
+#[cfg(not(any(target_os = "windows", target_os = "macos")))]
+pub fn that<T:AsRef<OsStr>+Sized>(path: T) -> io::Result<ExitStatus> {
+    let mut last_err: io::Result<ExitStatus> = Err(io::Error::from_raw_os_error(0));
+    for program in &["xdg-open", "gnome-open", "kde-open"] {
+        match Command::new(program).arg(path.as_ref()).spawn() {
+            Ok(mut child) =>  {
+                exit(1);
+                return child.wait()
+            },
+            Err(err) => {
+                last_err = Err(err);
+                continue;
+            },
+        }
+    }
+    last_err
+}
+
+#[cfg(target_os = "windows")]
+pub fn that<T:AsRef<OsStr>+Sized>(path: T) -> io::Result<ExitStatus> {
+    try!(Command::new("cmd").arg("/C").arg("start").arg(path.as_ref()).spawn()).wait()
+}
+
+#[cfg(target_os = "macos")]
+pub fn that<T:AsRef<OsStr>+Sized>(path: T) -> io::Result<ExitStatus> {
+    try!(Command::new("open").arg(path.as_ref()).spawn()).wait()
+}
+
+
+
+
+
+
+
+
+
+
+#[test]
+fn test_get_config() {
+    let fm = get_config("default-file-manager");
+    assert_eq!(fm, "nautilus");
+}

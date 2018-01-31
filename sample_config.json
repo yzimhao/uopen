@@ -1,0 +1,4 @@
+{
+    "default-web-browser": "xdg-open",
+    "default-file-manager": "nautilus"
+}

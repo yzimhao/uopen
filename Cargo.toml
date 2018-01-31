@@ -1,0 +1,11 @@
+[package]
+name = "uopen"
+version = "0.1.0"
+authors = ["dong <dong@q.com>"]
+
+[dependencies]
+config = {path="./config-rs"}
+glob = "0.2"
+
+log="0.4"
+simple_logger="0.4"
