@@ -5,9 +5,9 @@ extern crate simple_logger;
 
 extern crate config;
 
-// use std::path::Path;
+use std::path::{Path, PathBuf};
 // use std::collections::HashMap;
-// use std::env;
+use std::env;
 use config::*;
 
 
@@ -20,9 +20,20 @@ use std::ffi::OsStr;
 pub fn get_config(key: &str) -> String {
     info!("read the config file");
     let mut settings = Config::default();
+
+
+    let mut homeconfig = PathBuf::new();
+    homeconfig.push(env::home_dir().unwrap());
+    homeconfig.push(r".uopen_config.json");
+
+
+    let pp = homeconfig.to_str().unwrap();
+    info!("read home config file! {:?}", pp);
+
+
     settings
-        // .merge(File::with_name("~/.uopen_config.json")).unwrap()
-        .merge(File::with_name("./sample_config.json")).unwrap();
+        .merge(File::with_name(pp)).unwrap();
+        // .merge(File::with_name("/home/liaodong/.uopen_config.json")).unwrap();
 
     settings.get_str(key).unwrap()
 }
