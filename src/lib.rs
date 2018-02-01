@@ -39,7 +39,7 @@ pub fn get_config(key: &str) -> String {
 pub fn open(opt: &str)  {
     info!("the opt:{:?}", opt);
 
-    if opt.starts_with("http") | opt.starts_with("HTTP")  {
+    if opt.starts_with("http") || opt.starts_with("HTTP")  {
         that(opt);
         exit(1);
     }
@@ -107,12 +107,6 @@ pub fn that<T:AsRef<OsStr>+Sized>(path: T) -> io::Result<ExitStatus> {
 pub fn that<T:AsRef<OsStr>+Sized>(path: T) -> io::Result<ExitStatus> {
     try!(Command::new("open").arg(path.as_ref()).spawn()).wait()
 }
-
-
-
-
-
-
 
 
 
