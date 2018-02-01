@@ -45,8 +45,21 @@ pub fn open(opt: &str)  {
     if opt.starts_with("http") | opt.starts_with("HTTP")  {
         that(opt);
     }
-    if opt.starts_with(".") | opt.starts_with("/") {
-        filemanager(opt);
+    // local file
+    let mut abspath = PathBuf::new();
+
+    if opt.starts_with("/") {
+        abspath.push(opt);
+    } else {
+        abspath.push(env::current_dir().unwrap());
+        abspath.push(opt);
+    }
+
+    info!("the absolute path {:?} exists: {}", abspath, abspath.exists());
+    if abspath.exists() {
+        filemanager(abspath);
+    }else {
+        error!("absolute path not found: {:?}", abspath);
     }
 }
 
