@@ -6,14 +6,13 @@ extern crate simple_logger;
 extern crate config;
 
 use std::path::{Path, PathBuf};
-// use std::collections::HashMap;
 use std::env;
 use config::*;
 
 
 
 use std::io;
-use std::process::{Command, ExitStatus, exit};
+use std::process::{Command, ExitStatus, exit, Stdio};
 use std::ffi::OsStr;
 
 
@@ -31,9 +30,7 @@ pub fn get_config(key: &str) -> String {
     info!("read home config file! {:?}", pp);
 
 
-    settings
-        .merge(File::with_name(pp)).unwrap();
-        // .merge(File::with_name("/home/liaodong/.uopen_config.json")).unwrap();
+    settings.merge(File::with_name(pp)).unwrap();
 
     settings.get_str(key).unwrap()
 }
@@ -44,6 +41,7 @@ pub fn open(opt: &str)  {
 
     if opt.starts_with("http") | opt.starts_with("HTTP")  {
         that(opt);
+        exit(1);
     }
     // local file
     let mut abspath = PathBuf::new();
@@ -68,7 +66,7 @@ pub fn open(opt: &str)  {
 pub fn filemanager<T:AsRef<OsStr>+Sized>(path: T) -> io::Result<ExitStatus> {
     let mut last_err: io::Result<ExitStatus> = Err(io::Error::from_raw_os_error(0));
 
-    match Command::new(get_config("default-file-manager")).arg(path.as_ref()).spawn() {
+    match Command::new(get_config("default-file-manager")).arg(path.as_ref()).stdout(Stdio::null()).spawn() {
         Ok(mut child) => {
             exit(1);
             return child.wait()
@@ -86,9 +84,9 @@ pub fn filemanager<T:AsRef<OsStr>+Sized>(path: T) -> io::Result<ExitStatus> {
 pub fn that<T:AsRef<OsStr>+Sized>(path: T) -> io::Result<ExitStatus> {
     let mut last_err: io::Result<ExitStatus> = Err(io::Error::from_raw_os_error(0));
     for program in &["xdg-open", "gnome-open", "kde-open"] {
-        match Command::new(program).arg(path.as_ref()).spawn() {
+        match Command::new(program).arg(path.as_ref()).stdout(Stdio::null()).spawn() {
             Ok(mut child) =>  {
-                exit(1);
+                // exit(1);
                 return child.wait()
             },
             Err(err) => {

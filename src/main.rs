@@ -13,10 +13,10 @@ fn main() {
 
     info!("start app...");
     let args: Vec<String> = env::args().collect();
-    debug!("get options {:?}", args);
+    debug!("get parameter {:?}", args);
 
     if args.len() < 2 {
-        error!("args length some wrong!");
+        error!("args length： {}", args.len());
         std::process::exit(1);
     }
 
